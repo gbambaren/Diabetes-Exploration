@@ -1,0 +1,140 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+***ANOVA Factor Analysis***
+
+Loading the datasets
+```{r}
+diabetesGender = read.csv("Final_Diabetes_Region_Estimates_Gender_2011_2016.csv")
+diabetesGender
+```
+
+```{r}
+boxplot(diabetesGender$DiabetesPercentage~diabetesGender$Region, data = diabetesGender, xlab = "US Regions", ylab = "Population Percentage with Diabetes")
+```
+
+```{r}
+boxplot(diabetesGender$DiabetesPercentage~ diabetesGender$Gender, xlab = "Gender", ylab = "Gender Percentage with Diabetes")
+
+```
+
+
+
+```{r}
+anovaGender = aov(diabetesGender$DiabetesPercentage~., data = diabetesGender)
+summary(anovaGender)
+```
+
+```{r}
+par(mfrow = c(2,2))
+plot(anovaGender)
+```
+
+```{r}
+TukeyHSD(anovaGender)
+```
+
+```{r}
+diabetesRaceEthnicity = read.csv("Final_Diabetes_Region_Estimates_Race_2011_2016.csv")
+diabetesRaceEthnicity
+```
+```{r}
+boxplot(diabetesRaceEthnicity$DiabetesPercentage~diabetesRaceEthnicity$RaceEthnicity, data = diabetesRaceEthnicity, xlab = "Races/Ethnicities", ylab = "Race/Ethnicity Percentage with Diabetes")
+```
+
+
+```{r}
+anovaRaceEthnicity = aov(diabetesRaceEthnicity$DiabetesPercentage~., data = diabetesRaceEthnicity)
+summary(anovaRaceEthnicity)
+```
+
+```{r}
+par(mfrow = c(2,2))
+plot(anovaRaceEthnicity)
+```
+```{r}
+TukeyHSD(anovaRaceEthnicity)
+```
+```{r}
+boxplot(diabetesRaceEthnicity$DiabetesPercentage~diabetesRaceEthnicity$Region, data = diabetesRaceEthnicity, xlab = "US Regions", ylab = "Population Percentage with Diabetes")
+```
+
+
+```{r}
+library(car)
+```
+
+```{r}
+leveneTest(diabetesGender$DiabetesPercentage~diabetesGender$Region, data = diabetesGender)
+```
+
+```{r}
+leveneTest(diabetesGender$DiabetesPercentage~diabetesGender$Gender, data = diabetesGender)
+```
+
+```{r}
+leveneTest(diabetesRaceEthnicity$DiabetesPercentage~diabetesRaceEthnicity$Region, data = diabetesRaceEthnicity)
+```
+
+```{r}
+leveneTest(diabetesRaceEthnicity$DiabetesPercentage~diabetesRaceEthnicity$RaceEthnicity, data = diabetesRaceEthnicity)
+```
+
+Because our variance assumption was violated for the relationship between diabetes percentage and diabetes region when comparing genders, we now use a non-parametric approach. We will use the Kurskal Wallis Test.
+```{r}
+library(rcompanion)
+```
+
+
+```{r}
+scheirerGender = scheirerRayHare(DiabetesPercentage~Region + Gender, data = diabetesGender)
+scheirerGender
+```
+
+```{r}
+library(FSA)
+```
+
+```{r}
+dunnTest(diabetesGender$DiabetesPercentage, diabetesGender$Region)
+```
+
+```{r}
+diabetesNoSoutheast = diabetesGender[!(diabetesGender$Region == "Southeast"),]
+diabetesNoSoutheast
+```
+
+```{r}
+anovaRegionNoSouthEast = aov(DiabetesPercentage ~ Region + Gender, data = diabetesNoSoutheast)
+summary(anovaRegionNoSouthEast)
+```
+
+```{r}
+par(mfrow = c(2,2))
+plot(anovaRegionNoSouthEast)
+```
+
+Checking for interaction effect
+
+```{r}
+interaction.plot(diabetesGender$Region, diabetesGender$Gender, diabetesGender$DiabetesPercentage,col = c(2,3), xlab = "US Region", ylab = "Mean of Diabetes Percentage")
+```
+
+```{r}
+interaction.plot(diabetesRaceEthnicity$Region, diabetesRaceEthnicity$RaceEthnicity, diabetesRaceEthnicity$DiabetesPercentage, col = c(2,3,4,5,6), xlab = "US Region", ylab = "Mean of Diabetes Percentage")
+```
+
+
+
+```{r}
+interactionGender = aov(DiabetesPercentage~ Region*Gender, data = diabetesGender)
+summary(interactionGender)
+```
+
+```{r}
+interactionRaceEthnicity = aov(DiabetesPercentage ~ Region * RaceEthnicity, data = diabetesRaceEthnicity)
+summary(interactionRaceEthnicity)
+```
+
